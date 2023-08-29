@@ -1,15 +1,4 @@
-import { TranslationWidth } from '@angular/common';
-import { Component, OnInit, ViewChild } from '@angular/core';
-
-interface frameScoreData {
-	first: number;
-	second?: number;
-	third?: number;
-}
-
-export interface FrameObj {
-  frames: Array<any>;
-}
+import { Component, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-bowling-score-calculator-component',
@@ -18,78 +7,59 @@ export interface FrameObj {
 })
 
 export class BowlingScoreCalculatorComponentComponent implements OnInit {
-  public formData: frameScoreData;
-  public score: number = 0;
-  public rollsArr: Array<number> = [];
-  public frameNumber: number = 1;
+  frames: number[][] = []; // Array to store the frames and their scores
+  currentFrame: number[] = []; // Array to store the current frame being played
+  totalScore: number = 0; // Total score of the game
 
-  constructor() { 
-    this.formData = {
-			first: 0,
-			second: 0,
-			third: 0
-		};
-  }
-  
-  
-  ngOnInit(): void { }
+  constructor() { }
 
-  public submitScore() : number {
-      if(this.frameNumber < 10){ // For frame number 1 to 9
-        if(this.formData.first === 10){ // Is Strike
-          this.rollsArr.push(this.formData.first);
-        }else{
-          this.rollsArr.push(this.formData.first,this.formData.second ? this.formData.second : 0);
-        }
-      }
-      else if(this.frameNumber === 10){ // For frame number 10
-        this.rollsArr.push(this.formData.first,this.formData.second ? this.formData.second : 0,this.formData.third ? this.formData.third : 0);
-      }
-      
-      this.score = this.scoreCalculator(); // Calculate Score
-      this.formData = {first: 0,second: 0,third: 0}; // Reset form
-      this.frameNumber = this.frameNumber + 1; // Increase frame number
-      return this.score;
+  ngOnInit(): void {
   }
 
-  public scoreCalculator(){
-    let score = 0;
-    let rollIndex = 0;
-    for(let frameIndex=0;frameIndex<this.frameNumber;frameIndex++){
-        if(this.isStrike(rollIndex)){
-            score += this.getStrikeBonus(rollIndex);
-            rollIndex++;
-            continue;
-        }
-        let frameScore = this.frameScore(rollIndex);
-        if(this.isSpare(frameScore)){
-            score += this.getSpareBonus(rollIndex)
-        }else{
-            score += frameScore;
-        }
-        
-        rollIndex+=2
+  // Function to add a roll to the current frame
+  addRoll(pins: number): void {
+    if (this.currentFrame.length < 2) {
+      this.currentFrame.push(pins);
+    } else if (this.currentFrame.length === 2 && this.currentFrame.reduce((a, b) => a + b) < 10) {
+      this.frames.push(this.currentFrame);
+      this.currentFrame = [pins];
+    } else if (this.currentFrame.length === 2 && this.currentFrame.reduce((a, b) => a + b) === 10) {
+      this.currentFrame.push(pins);
     }
-    return score;
+
+    this.calculateScore();
   }
 
-  frameScore(rollIndex:number){
-      return (this.rollsArr[rollIndex] ? this.rollsArr[rollIndex] : 0) + (this.rollsArr[rollIndex+1] ? this.rollsArr[rollIndex+1] : 0);
+  // Function to calculate the score
+  calculateScore(): void {
+    this.totalScore = 0;
+
+    for (let i = 0; i < this.frames.length; i++) {
+      let frameScore = this.frames[i].reduce((a, b) => a + b);
+
+      // Check for strike or spare
+      if (this.frames[i][0] === 10 && this.frames[i].length === 1) {
+        if (i < 9) {
+          frameScore += this.frames[i + 1][0] + this.frames[i + 1][1];
+        } else if (i === 9 && this.frames[i].length === 3) {
+          frameScore += this.frames[i][1] + this.frames[i][2];
+        }
+      } else if (frameScore === 10 && this.frames[i].length === 2) {
+        if (i < 9) {
+          frameScore += this.frames[i + 1][0];
+        } else if (i === 9 && this.frames[i].length === 3) {
+          frameScore += this.frames[i][2];
+        }
+      }
+
+      this.totalScore += frameScore;
+    }
   }
 
-  getSpareBonus(rollIndex:number){
-      return 10 + (this.rollsArr[rollIndex+2] ? this.rollsArr[rollIndex+2] : 0);
+  // Function to reset the game
+  resetGame(): void {
+    this.frames = [[]];
+    this.currentFrame = [];
+    this.totalScore = 0;
   }
-  getStrikeBonus(rollIndex:number){
-      return 10 + (this.rollsArr[rollIndex+1] ? this.rollsArr[rollIndex+1] : 0) + (this.rollsArr[rollIndex+2] ? this.rollsArr[rollIndex+2] : 0);
-  }
-
-  isSpare(frameScore:number){
-      return frameScore===10;
-  }
-
-  isStrike(rollIndex:number){
-      return this.rollsArr[rollIndex]===10;
-  }
-
 }

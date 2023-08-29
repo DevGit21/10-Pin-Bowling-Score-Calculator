@@ -1,42 +1,44 @@
-<div class="bowling-game">
-    <h1> Ten Pin Bowling Game</h1>
-    <div class="final-score">The Final Score is <b>{{score}}</b></div>
-    <div class="frame-number" *ngIf="frameNumber < 11">Frame Number: <b>{{frameNumber}}</b></div>
-    <form (submit)="submitScore()">
-        <table *ngIf="frameNumber < 11">
-            <tr>
-                <th>First Roll</th>
-                <th *ngIf="formData.first < 10 || frameNumber === 10">Second Roll</th>
-                <th
-                    *ngIf="frameNumber === 10 && (formData.first === 10 || (formData.first + (this.formData.second ? this.formData.second : 0) === 10))">
-                    Third Roll</th>
-            </tr>
-            <tr>
-                <td>
-                    <input type="number" name="first" maxlength="2" min="0" max="10" required
-                        [(ngModel)]="formData.first" />
-                </td>
-                <td *ngIf="formData.first < 10 || frameNumber === 10">
-                    <input type="number" name="second" maxlength="2" min="0"
-                        max="{{(frameNumber === 10 && formData.first === 10) ? 10 : 10-formData.first}}"
-                        [(ngModel)]="formData.second" />
-                </td>
-
-                <td
-                    *ngIf="frameNumber === 10 && (formData.first === 10 || (formData.first + (this.formData.second ? this.formData.second : 0) === 10))">
-                    <input type="number" name="third" maxlength="2" min="0" max="10" [(ngModel)]="formData.third" />
-                </td>
-            </tr>
-
-        </table>
-        <div>
-            <button type="submit" *ngIf="frameNumber < 11">
-                Submit Score
-            </button>
-            <button type="reset" *ngIf="frameNumber === 11" onclick="location.reload();">
-                Reset Score
-            </button>
-        </div>
-        
-    </form>
-</div>
+<div class="container">
+    <h1>10 Pin Bowling Score Calculator</h1>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="frame"><h2>Frames</h2>
+            <div *ngFor="let frame of frames; let i=index" class="frame-row">
+            <div class="frame-cell" *ngFor="let roll of frame; let j=index">
+            {{ roll === 10 ? 'X' : roll }}
+            </div>
+            </div>
+            </div>
+            <div class="col-md-6">
+            <h2>Current Frame</h2>
+            <div class="frame-row">
+            <div class="frame-cell" *ngFor="let roll of currentFrame; let i=index">
+            {{ roll === 10 ? 'X' : roll }}
+            </div>
+            </div>
+            </div>
+            </div>
+            <div class="row">
+            <div class="col-md-6">
+            <h2>Total Score</h2>
+            <div class="total-score">{{ totalScore }}</div>
+            </div>
+            <div class="col-md-6">
+            <h2>Rolls</h2>
+            <div class="rolls-row">
+            <div class="roll-cell" *ngFor="let roll of [1,2,3,4,5,6,7,8,9,10]" (click)="addRoll(roll)">{{ roll }}</div>
+            <div class="roll-cell" (click)="addRoll(10)">X</div>
+            <div class="roll-cell" (click)="addRoll(0)">0</div>
+            </div>
+            </div>
+            </div>
+            <div class="row">
+            <div class="col-md-6">
+            <button class="btn btn-danger" (click)="resetGame()">Reset Game</button>
+            </div>
+            </div>
+            
+              </div>
+            </div>
+    
+  
